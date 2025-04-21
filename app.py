@@ -287,7 +287,7 @@ def handle_chat():
             else: logging.info("Context Mode: document - skipping page text extraction.")
             # Get RAG Context
             try:
-                logging.info(f"RAG query for {paper_id}..."); retriever = vectorstore.as_retriever(search_kwargs={'filter': {'paper_id': paper_id}, 'k': 8}) # Using k=6 as per user's change
+                logging.info(f"RAG query for {paper_id}..."); retriever = vectorstore.as_retriever(search_kwargs={'filter': {'paper_id': paper_id}, 'k': 10}) # Using k=6 as per user's change
                 relevant_docs = retriever.invoke(user_message); logging.info(f"RAG got {len(relevant_docs)} docs.")
                 if relevant_docs: rag_context_list = [f"--- 文件片段 {i+1} ---\n{doc.page_content}" for i, doc in enumerate(relevant_docs)]; rag_context = "**相關文件片段 (供參考):**\n" + "\n\n".join(rag_context_list)
                 else: rag_context = "(文件中未找到相關片段)"
