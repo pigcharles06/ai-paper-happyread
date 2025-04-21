@@ -1,0 +1,10 @@
+flask
+openai
+langchain
+langchain-openai
+chromadb # <--- 添加這一行
+pypdf # 或 pymupdf
+python-dotenv
+# 如果使用 PyMuPDF (推薦)
+PyMuPDF
+fitz # PyMuPDF 的別名/導入名，明確加入可能更好
