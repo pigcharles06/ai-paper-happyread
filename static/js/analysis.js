@@ -14,26 +14,29 @@ document.addEventListener('DOMContentLoaded', () => {
     analyzePageBtn.addEventListener('click', async () => {
         console.log("Analyze Page button clicked.");
 
+        // Use the globally exposed addChatMessage function (if available)
+        const globalAddChatMessage = window.addChatMessage;
+
         if (analyzePageBtn.disabled) { console.log("Analyze button is disabled."); return; }
         const pdfCanvas = document.getElementById('pdf-canvas'); // Get canvas dynamically
         if (!pdfCanvas || pdfCanvas.width === 0 || pdfCanvas.height === 0) {
             console.error("PDF Canvas not found or is empty for analysis.");
-            // Use the globally exposed addChatMessage function (if available)
-            if (typeof window.addChatMessage === 'function') { window.addChatMessage('system', "錯誤：無法獲取 PDF 頁面圖像以進行分析。", 'error'); }
+            if (globalAddChatMessage) { globalAddChatMessage('system', "錯誤：無法獲取 PDF 頁面圖像以進行分析。", 'error'); }
             else { alert("錯誤：無法獲取 PDF 頁面圖像以進行分析。"); }
             return;
         }
-        // Access currentPageNum (ensure it's global or accessible from main.js)
+        // Access global currentPageNum (ensure it's set correctly in main.js)
+        // Need to declare currentPageNum globally or pass it differently if using strict modules
         if (typeof currentPageNum === 'undefined') {
              console.error("currentPageNum is not accessible from main.js scope.");
-             if (typeof window.addChatMessage === 'function') { window.addChatMessage('system', "錯誤：無法獲取當前頁碼。", 'error'); }
+             if (globalAddChatMessage) { globalAddChatMessage('system', "錯誤：無法獲取當前頁碼。", 'error'); }
              else { alert("錯誤：無法獲取當前頁碼。"); }
              return;
         }
         console.log(`Analyzing page number: ${currentPageNum}`);
 
         // --- Start Analysis Process ---
-        if (typeof window.addChatMessage === 'function') { window.addChatMessage('system', `正在分析第 ${currentPageNum} 頁...`); }
+        if (globalAddChatMessage) { globalAddChatMessage('system', `正在分析第 ${currentPageNum} 頁...`); }
         analyzePageBtn.disabled = true;
         const originalButtonText = analyzePageBtn.innerHTML; // Store original html
         analyzePageBtn.innerHTML = `<svg class="animate-spin h-4 w-4 inline mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>分析中...`;
@@ -57,25 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.analysis) {
                 const analysisMessage = `**第 ${currentPageNum} 頁分析結果:**\n\n${result.analysis}`;
                 // Use globally exposed addChatMessage
-                if (typeof window.addChatMessage === 'function') { window.addChatMessage('analysis', analysisMessage, 'normal'); }
+                if (globalAddChatMessage) { globalAddChatMessage('analysis', analysisMessage, 'normal'); }
                 else { console.error("addChatMessage function not found."); alert(`分析結果:\n${result.analysis}`); }
                 console.log("Analysis successful.");
             } else {
-                if (typeof window.addChatMessage === 'function') { window.addChatMessage('system', `AI 未能提供第 ${currentPageNum} 頁的分析結果。`, 'error'); }
+                if (globalAddChatMessage) { globalAddChatMessage('system', `AI 未能提供第 ${currentPageNum} 頁的分析結果。`, 'error'); }
                 else { alert(`AI 未能提供第 ${currentPageNum} 頁的分析結果。`); }
                 console.warn("Analysis response empty.");
             }
         } catch (error) {
             console.error("Page analysis failed:", error);
-             if (typeof window.addChatMessage === 'function') { window.addChatMessage('system', `分析失敗: ${error.message || '未知錯誤'}`, 'error'); }
+             if (globalAddChatMessage) { globalAddChatMessage('system', `分析失敗: ${error.message || '未知錯誤'}`, 'error'); }
              else { alert(`分析失敗: ${error.message || '未知錯誤'}`); }
         } finally {
-            // Re-enable button only if a PDF is currently loaded (check global state)
-             if (typeof currentPdfDoc !== 'undefined' && currentPdfDoc) {
-                 analyzePageBtn.disabled = false;
-             } else {
-                 analyzePageBtn.disabled = true; // Keep disabled if no PDF
-             }
+            // Re-enable button only if a PDF is currently loaded (check global state from main.js)
+             // Accessing currentPdfDoc relies on it being global or accessible
+             let pdfIsLoaded = typeof currentPdfDoc !== 'undefined' && currentPdfDoc;
+             if(analyzePageBtn) analyzePageBtn.disabled = !pdfIsLoaded;
+
             analyzePageBtn.innerHTML = originalButtonText; // Restore button text/icon
             console.log("Analysis process finished.");
         }
